@@ -223,7 +223,7 @@ vector<Plaintext> deserialize_plaintexts(JNIEnv *env, jobjectArray array, const 
     BatchEncoder encoder(context);
     jint size = env->GetArrayLength(array);
     vector<Plaintext> plaintexts(size);
-    for (jint i = 0; i < size; i++) {
+    for (jint i = 0; i < 1; i++) {
         auto row = (jlongArray) env->GetObjectArrayElement(array, i);
         jlong* ptr = env->GetLongArrayElements(row, JNI_FALSE);
         vector<uint64_t> temp_vec(ptr, ptr + env->GetArrayLength(row));

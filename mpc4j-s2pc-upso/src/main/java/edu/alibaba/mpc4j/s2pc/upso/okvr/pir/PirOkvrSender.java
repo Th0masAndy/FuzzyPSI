@@ -166,13 +166,13 @@ public class PirOkvrSender extends AbstractOkvrSender {
     private void generateOkvs() {
         okvsKeys = CommonUtils.generateRandomKeys(Gf2eDokvsFactory.getHashKeyNum(okvsType), secureRandom);
         sparseOkvs = Gf2eDokvsFactory.createSparseInstance(envType, okvsType, num, l, okvsKeys);
-        sparseOkvs.setParallelEncode(parallel);
+        sparseOkvs.setParallelEncode(true);
         // The PRF maps (random) inputs to {0, 1}^l, we only need to set an empty key
         Prf prf = PrfFactory.createInstance(envType, byteL);
         prf.setKey(new byte[CommonConstants.BLOCK_BYTE_LENGTH]);
         // oprf key-value map
         Stream<Entry<ByteBuffer, byte[]>> keyValueMapStream = keyValueMap.entrySet().stream();
-        keyValueMapStream = parallel ? keyValueMapStream.parallel() : keyValueMapStream;
+        keyValueMapStream = keyValueMapStream.parallel();
         Map<ByteBuffer, byte[]> oprfKeyValueMap = keyValueMapStream
             .collect(Collectors.toMap(
                 Entry::getKey,

@@ -10,6 +10,7 @@ import edu.alibaba.mpc4j.common.tool.crypto.prf.PrfFactory;
 import edu.alibaba.mpc4j.common.tool.hashbin.MaxBinSizeUtils;
 import edu.alibaba.mpc4j.common.tool.utils.BytesUtils;
 import edu.alibaba.mpc4j.common.tool.utils.CommonUtils;
+import edu.alibaba.mpc4j.common.tool.utils.DoubleUtils;
 import edu.alibaba.mpc4j.common.tool.utils.ObjectUtils;
 
 import java.security.SecureRandom;
@@ -35,7 +36,7 @@ class H3ClusterFieldBlazeGctGf2kDokvs<T> extends AbstractGf2kDokvs<T> implements
     /**
      * expected bin size, i.e., m^* = 2^14
      */
-    private static final int EXPECT_BIN_SIZE = 1 << 14;
+    private static final int EXPECT_BIN_SIZE = 50000;
 
     /**
      * Gets m.
@@ -45,7 +46,7 @@ class H3ClusterFieldBlazeGctGf2kDokvs<T> extends AbstractGf2kDokvs<T> implements
      */
     static int getM(int n) {
         MathPreconditions.checkPositive("n", n);
-        int binNum = CommonUtils.getUnitNum(n, EXPECT_BIN_SIZE);
+        int binNum = (int) DoubleUtils.log2(n);
         int binN = MaxBinSizeUtils.approxMaxBinSize(n, binNum);
         int binLm = H3FieldBlazeGctGf2kDokvs.getLm(binN);
         int binRm = H3FieldBlazeGctGf2kDokvs.getRm(binN);
@@ -89,7 +90,7 @@ class H3ClusterFieldBlazeGctGf2kDokvs<T> extends AbstractGf2kDokvs<T> implements
     H3ClusterFieldBlazeGctGf2kDokvs(EnvType envType, int n, byte[][] keys, SecureRandom secureRandom) {
         super(envType, n, getM(n), secureRandom);
         // calculate bin_num and bin_size
-        binNum = CommonUtils.getUnitNum(n, EXPECT_BIN_SIZE);
+        binNum = (int) DoubleUtils.log2(n);
         binN = MaxBinSizeUtils.approxMaxBinSize(n, binNum);
         binLm = H3FieldBlazeGctGf2kDokvs.getLm(binN);
         binRm = H3FieldBlazeGctGf2kDokvs.getRm(binN);

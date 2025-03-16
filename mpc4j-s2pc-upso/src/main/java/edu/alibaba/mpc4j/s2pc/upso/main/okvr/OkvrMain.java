@@ -95,7 +95,7 @@ public class OkvrMain {
         LOGGER.info("{} generate warm-up element files", serverRpc.ownParty().getPartyName());
         PirUtils.generateBytesInputFiles(WARMUP_SERVER_SET_SIZE, WARMUP_ELEMENT_BIT_LENGTH);
         LOGGER.info("{} generate element files", serverRpc.ownParty().getPartyName());
-        for (int setSizeIndex = 0 ; setSizeIndex < setSizeNum; setSizeIndex++) {
+        for (int setSizeIndex = 0; setSizeIndex < setSizeNum; setSizeIndex++) {
             PirUtils.generateBytesInputFiles(serverSetSizes[setSizeIndex], elementBitLength);
         }
         LOGGER.info("{} create result file", serverRpc.ownParty().getPartyName());
@@ -105,7 +105,7 @@ public class OkvrMain {
             + "_" + serverRpc.ownParty().getPartyId()
             + "_" + ForkJoinPool.getCommonPoolParallelism()
             + ".output";
-        FileWriter fileWriter = new FileWriter(filePath);
+        FileWriter fileWriter = new FileWriter(filePath, true);
         PrintWriter printWriter = new PrintWriter(fileWriter, true);
         String tab = "Party ID\tServer Set Size\tClient Set Size\tIs Parallel\tThread Num"
             + "\tInit Time(ms)\tInit DataPacket Num\tInit Payload Bytes(B)\tInit Send Bytes(B)"
@@ -191,7 +191,7 @@ public class OkvrMain {
             ));
         OkvrSender okvrSender = OkvrFactory.createSender(serverRpc, clientParty, config);
         okvrSender.setTaskId(taskId);
-        okvrSender.setParallel(true);
+        okvrSender.setParallel(false);
         okvrSender.getRpc().synchronize();
         okvrSender.getRpc().reset();
         LOGGER.info("{} init", okvrSender.ownParty().getPartyName());
@@ -220,7 +220,7 @@ public class OkvrMain {
             + "\t" + okvrSender.getParallel()
             + "\t" + ForkJoinPool.getCommonPoolParallelism()
             + "\t" + initTime + "\t" + initDataPacketNum + "\t" + initPayloadByteLength + "\t" + initSendByteLength
-            + "\t" + ptoTime + "\t" + ptoDataPacketNum + "\t" + ptoPayloadByteLength + "\t" + ptoSendByteLength;
+            + "\t" + String.format("%.2f", ptoTime * 1.0 / 1000) + "\t" + ptoDataPacketNum + "\t" + ptoPayloadByteLength + "\t" + String.format("%.2f", ptoSendByteLength * 1.0 / 1024 / 1024);
         printWriter.println(info);
         okvrSender.getRpc().synchronize();
         okvrSender.getRpc().reset();
@@ -258,7 +258,7 @@ public class OkvrMain {
             + "_" + clientRpc.ownParty().getPartyId()
             + "_" + ForkJoinPool.getCommonPoolParallelism()
             + ".output";
-        FileWriter fileWriter = new FileWriter(filePath);
+        FileWriter fileWriter = new FileWriter(filePath, true);
         PrintWriter printWriter = new PrintWriter(fileWriter, true);
         String tab = "Party ID\tServer Set Size\tClient Set Size\tIs Parallel\tThread Num"
             + "\tInit Time(ms)\tInit DataPacket Num\tInit Payload Bytes(B)\tInit Send Bytes(B)"
@@ -331,7 +331,7 @@ public class OkvrMain {
         );
         OkvrReceiver okvrReceiver = OkvrFactory.createReceiver(clientRpc, serverParty, config);
         okvrReceiver.setTaskId(taskId);
-        okvrReceiver.setParallel(true);
+        okvrReceiver.setParallel(false);
         okvrReceiver.getRpc().synchronize();
         okvrReceiver.getRpc().reset();
         LOGGER.info("{} init", okvrReceiver.ownParty().getPartyName());
@@ -363,7 +363,7 @@ public class OkvrMain {
             + "\t" + okvrReceiver.getParallel()
             + "\t" + ForkJoinPool.getCommonPoolParallelism()
             + "\t" + initTime + "\t" + initDataPacketNum + "\t" + initPayloadByteLength + "\t" + initSendByteLength
-            + "\t" + ptoTime + "\t" + ptoDataPacketNum + "\t" + ptoPayloadByteLength + "\t" + ptoSendByteLength;
+            + "\t" + String.format("%.2f", ptoTime * 1.0 / 1000) + "\t" + ptoDataPacketNum + "\t" + ptoPayloadByteLength + "\t" + String.format("%.2f", ptoSendByteLength * 1.0 / 1024 / 1024);
         printWriter.println(info);
         okvrReceiver.getRpc().synchronize();
         okvrReceiver.getRpc().reset();

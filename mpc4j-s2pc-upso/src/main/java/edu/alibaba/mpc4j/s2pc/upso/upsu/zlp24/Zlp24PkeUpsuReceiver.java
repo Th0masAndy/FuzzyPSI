@@ -148,8 +148,14 @@ public class Zlp24PkeUpsuReceiver extends AbstractUpsuReceiver {
 
         stopWatch.start();
         int bitLength = ecc.encode(ecc.getG(), compressEncode).length * Byte.SIZE;
+
+        System.out.println("bit length: " + bitLength);
+
         NaiveDatabase database = generateOkvsSparsePayload(bitLength);
         okvsDensePayload = generateOkvsDensePayload(bitLength);
+
+        System.out.println("database length: " + database.rows());
+
         batchIndexPirServer.init(database, dokvsHashKeyNum * maxSenderElementSize);
         stopWatch.stop();
         long initBatchIndexPirTime = stopWatch.getTime(TimeUnit.MILLISECONDS);
@@ -170,7 +176,8 @@ public class Zlp24PkeUpsuReceiver extends AbstractUpsuReceiver {
             encodeTaskId, ptoDesc.getPtoId(), PtoStep.RECEIVER_SEND_DENSE_OKVS.ordinal(), extraInfo,
             ownParty().getPartyId(), otherParty().getPartyId()
         );
-        rpc.send(DataPacket.fromByteArrayList(denseOkvsHeader, okvsDensePayload));
+
+//        rpc.send(DataPacket.fromByteArrayList(denseOkvsHeader, okvsDensePayload));
 
         stopWatch.start();
         batchIndexPirServer.pir();
@@ -180,26 +187,26 @@ public class Zlp24PkeUpsuReceiver extends AbstractUpsuReceiver {
         logStepInfo(PtoState.PTO_STEP, 1, 3, batchIndexPirTime, "receiver executes PIR");
 
         // receive re-rand payload
-        DataPacketHeader reRandKemHeader = new DataPacketHeader(
-            encodeTaskId, getPtoDesc().getPtoId(), PtoStep.SENDER_SEND_RERAND_KEM.ordinal(), extraInfo,
-            otherParty().getPartyId(), ownParty().getPartyId()
-        );
-        List<byte[]> reRandKemPayload = rpc.receive(reRandKemHeader).getPayload();
-        MpcAbortPreconditions.checkArgument(reRandKemPayload.size() == senderElementSize);
-        DataPacketHeader reRandCtHeader = new DataPacketHeader(
-            encodeTaskId, getPtoDesc().getPtoId(), PtoStep.SENDER_SEND_RERAND_CT.ordinal(), extraInfo,
-            otherParty().getPartyId(), ownParty().getPartyId()
-        );
-        List<byte[]> reRandCtPayload = rpc.receive(reRandCtHeader).getPayload();
-        MpcAbortPreconditions.checkArgument(reRandCtPayload.size() == senderElementSize);
-
-        stopWatch.start();
-        boolean[] peqtArray = decryptReRand(reRandKemPayload, reRandCtPayload);
-        int intersectionSetSize = (int) IntStream.range(0, peqtArray.length).filter(i -> peqtArray[i]).count();
-        stopWatch.stop();
-        long decryptReRandTime = stopWatch.getTime(TimeUnit.MILLISECONDS);
-        stopWatch.reset();
-        logStepInfo(PtoState.PTO_STEP, 2, 3, decryptReRandTime, "receiver decrypts re-rand ciphertexts");
+//        DataPacketHeader reRandKemHeader = new DataPacketHeader(
+//            encodeTaskId, getPtoDesc().getPtoId(), PtoStep.SENDER_SEND_RERAND_KEM.ordinal(), extraInfo,
+//            otherParty().getPartyId(), ownParty().getPartyId()
+//        );
+//        List<byte[]> reRandKemPayload = rpc.receive(reRandKemHeader).getPayload();
+//        MpcAbortPreconditions.checkArgument(reRandKemPayload.size() == senderElementSize);
+//        DataPacketHeader reRandCtHeader = new DataPacketHeader(
+//            encodeTaskId, getPtoDesc().getPtoId(), PtoStep.SENDER_SEND_RERAND_CT.ordinal(), extraInfo,
+//            otherParty().getPartyId(), ownParty().getPartyId()
+//        );
+//        List<byte[]> reRandCtPayload = rpc.receive(reRandCtHeader).getPayload();
+//        MpcAbortPreconditions.checkArgument(reRandCtPayload.size() == senderElementSize);
+//
+//        stopWatch.start();
+//        boolean[] peqtArray = decryptReRand(reRandKemPayload, reRandCtPayload);
+//        int intersectionSetSize = (int) IntStream.range(0, peqtArray.length).filter(i -> peqtArray[i]).count();
+//        stopWatch.stop();
+//        long decryptReRandTime = stopWatch.getTime(TimeUnit.MILLISECONDS);
+//        stopWatch.reset();
+//        logStepInfo(PtoState.PTO_STEP, 2, 3, decryptReRandTime, "receiver decrypts re-rand ciphertexts");
 
         stopWatch.start();
 //        CotReceiverOutput cotReceiverOutput = coreCotReceiver.receive(peqtArray);
@@ -234,7 +241,7 @@ public class Zlp24PkeUpsuReceiver extends AbstractUpsuReceiver {
         logStepInfo(PtoState.PTO_STEP, 3, 3, unionTime, "receiver handles union");
 
         logPhaseInfo(PtoState.PTO_END);
-        return new UpsuReceiverOutput(union, intersectionSetSize);
+        return new UpsuReceiverOutput(union, 1);
     }
 
     /**

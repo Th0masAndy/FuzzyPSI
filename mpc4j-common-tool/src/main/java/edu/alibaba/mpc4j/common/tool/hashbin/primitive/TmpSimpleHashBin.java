@@ -6,12 +6,11 @@ import edu.alibaba.mpc4j.common.tool.crypto.prf.Prf;
 import edu.alibaba.mpc4j.common.tool.crypto.prf.PrfFactory;
 import edu.alibaba.mpc4j.common.tool.hashbin.MaxBinSizeUtils;
 import edu.alibaba.mpc4j.common.tool.utils.IntUtils;
+import gnu.trove.list.array.TIntArrayList;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.IntStream;
 
 /**
@@ -20,7 +19,7 @@ import java.util.stream.IntStream;
  * @author Weiran Liu
  * @date 2022/02/23
  */
-public class SimpleIntHashBin implements IntHashBin {
+public class TmpSimpleHashBin implements IntHashBin {
     /**
      * 带密钥哈希函数
      */
@@ -48,15 +47,15 @@ public class SimpleIntHashBin implements IntHashBin {
     /**
      * 哈希桶
      */
-    private final int[][] bins;
+    private final TIntArrayList[] bins;
     /**
      * 哈希桶对应的哈希位置
      */
-    private final int[][] binsHashIndexes;
+    private final TIntArrayList[] binsHashIndexes;
     /**
      * 哈希桶元素数量
      */
-    private final int[] binSize;
+//    private final int[] binSize;
     /**
      * 元素哈希位置映射
      */
@@ -70,7 +69,7 @@ public class SimpleIntHashBin implements IntHashBin {
      * @param maxItemSize 元素总个数。
      * @param keys        哈希密钥。
      */
-    public SimpleIntHashBin(EnvType envType, int binNum, int maxItemSize, byte[][] keys) {
+    public TmpSimpleHashBin(EnvType envType, int binNum, int maxItemSize, byte[][] keys) {
         this(envType, binNum, MaxBinSizeUtils.expectMaxBinSize(keys.length * maxItemSize, binNum), maxItemSize, keys);
     }
 
@@ -83,7 +82,7 @@ public class SimpleIntHashBin implements IntHashBin {
      * @param maxItemSize 元素总个数。
      * @param keys        哈希密钥。
      */
-    public SimpleIntHashBin(EnvType envType, int binNum, int maxBinSize, int maxItemSize, byte[][] keys) {
+    public TmpSimpleHashBin(EnvType envType, int binNum, int maxBinSize, int maxItemSize, byte[][] keys) {
         assert binNum > 0;
         assert maxBinSize > 0;
         assert maxItemSize > 0;
@@ -102,21 +101,23 @@ public class SimpleIntHashBin implements IntHashBin {
             })
             .toArray(Prf[]::new);
         // 初始化哈希桶
-        bins = IntStream.range(0, binNum)
-            .mapToObj(binIndex -> {
-                int[] bin = new int[maxBinSize];
-                Arrays.fill(bin, -1);
-                return bin;
-            })
-            .toArray(int[][]::new);
-        binsHashIndexes = IntStream.range(0, binNum)
-            .mapToObj(binIndex -> {
-                int[] bin = new int[maxBinSize];
-                Arrays.fill(bin, -1);
-                return bin;
-            })
-            .toArray(int[][]::new);
-        binSize = new int[binNum];
+        bins = IntStream.range(0, binNum).mapToObj(binIndex -> new TIntArrayList()).toArray(TIntArrayList[]::new);
+        binsHashIndexes = IntStream.range(0, binNum).mapToObj(binIndex -> new TIntArrayList()).toArray(TIntArrayList[]::new);
+//        bins = IntStream.range(0, binNum)
+//            .mapToObj(binIndex -> {
+//                int[] bin = new int[maxBinSize];
+//                Arrays.fill(bin, -1);
+//                return bin;
+//            })
+//            .toArray(int[][]::new);
+//        binsHashIndexes = IntStream.range(0, binNum)
+//            .mapToObj(binIndex -> {
+//                int[] bin = new int[maxBinSize];
+//                Arrays.fill(bin, -1);
+//                return bin;
+//            })
+//            .toArray(int[][]::new);
+//        binSize = new int[binNum];
         // 初始化元素哈希映射
         itemBinIndexesMap = new TIntObjectHashMap<>(maxItemSize);
         insertedItems = false;
@@ -164,17 +165,17 @@ public class SimpleIntHashBin implements IntHashBin {
                 int binIndex = hashes[hashIndex].getInteger(IntUtils.intToByteArray(item), binNum);
                 itemBinIndexes[hashIndex] = binIndex;
                 // 将元素插入到对应哈希桶中，可以包含重复元素
-                if (binSize[binIndex] < maxBinSize) {
-                    bins[binIndex][binSize[binIndex]] = item;
-                    binsHashIndexes[binIndex][binSize[binIndex]] = hashIndex;
-                    binSize[binIndex]++;
+                if (bins[binIndex].size() < maxBinSize) {
+                    bins[binIndex].add(item);
+                    binsHashIndexes[binIndex].add(hashIndex);
+//                    binSize[binIndex]++;
                     itemSize++;
                 } else {
                     clear();
                     // 如果没有成功在哈希桶中插入元素，意味着桶超过最大值
                     throw new ArithmeticException(
                         String.format("bin[%s] contains %s items, exceeding MaxBinSize = %s",
-                            binIndex, binSize[binIndex], maxBinSize
+                            binIndex, bins[binIndex].size(), maxBinSize
                         )
                     );
                 }
@@ -213,31 +214,35 @@ public class SimpleIntHashBin implements IntHashBin {
 
     @Override
     public int[] getBin(int binIndex) {
-        return bins[binIndex];
+        return bins[binIndex].toArray();
     }
 
     @Override
     public int[] getBinHashIndexes(int binIndex) {
         assert binIndex >= 0 && binIndex < binNum;
-        return binsHashIndexes[binIndex];
+        return binsHashIndexes[binIndex].toArray();
     }
 
     @Override
     public int binSize(int binIndex) {
         assert binIndex >= 0 && binIndex < binNum;
-        return binSize[binIndex];
+        return bins[binIndex].size();
     }
 
     @Override
     public void clear() {
         // 清空桶中的元素
-        for (int[] bin : bins) {
-            Arrays.fill(bin, -1);
+//        for (int[] bin : bins) {
+//            Arrays.fill(bin, -1);
+//        }
+//        for (int[] binHashIndexes : binsHashIndexes) {
+//            Arrays.fill(binHashIndexes, -1);
+//        }
+        for (int i = 0; i < binNum; i++) {
+            bins[i].clear();
+            binsHashIndexes[i].clear();
         }
-        for (int[] binHashIndexes : binsHashIndexes) {
-            Arrays.fill(binHashIndexes, -1);
-        }
-        Arrays.fill(binSize, 0);
+//        Arrays.fill(binSize, 0);
         // 清空索引值
         itemBinIndexesMap.clear();
         itemSize = 0;

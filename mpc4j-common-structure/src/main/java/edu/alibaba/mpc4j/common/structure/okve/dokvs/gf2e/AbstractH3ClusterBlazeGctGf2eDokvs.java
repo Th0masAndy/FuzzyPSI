@@ -11,6 +11,7 @@ import edu.alibaba.mpc4j.common.tool.crypto.prf.PrfFactory;
 import edu.alibaba.mpc4j.common.tool.hashbin.MaxBinSizeUtils;
 import edu.alibaba.mpc4j.common.tool.utils.BytesUtils;
 import edu.alibaba.mpc4j.common.tool.utils.CommonUtils;
+import edu.alibaba.mpc4j.common.tool.utils.DoubleUtils;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ abstract class AbstractH3ClusterBlazeGctGf2eDokvs<T> extends AbstractGf2eDokvs<T
     AbstractH3ClusterBlazeGctGf2eDokvs(EnvType envType, int n, int l, byte[][] keys, SecureRandom secureRandom) {
         super(n, H3ClusterBlazeGctDokvsUtils.getM(n), l, secureRandom);
         // calculate bin_num and bin_size
-        binNum = CommonUtils.getUnitNum(n, H3ClusterBlazeGctDokvsUtils.EXPECT_BIN_SIZE);
+        binNum = (int) DoubleUtils.log2(n);
         binN = MaxBinSizeUtils.approxMaxBinSize(n, binNum);
         binLm = H3BlazeGctDovsUtils.getLm(binN);
         binRm = H3BlazeGctDovsUtils.getRm(binN);

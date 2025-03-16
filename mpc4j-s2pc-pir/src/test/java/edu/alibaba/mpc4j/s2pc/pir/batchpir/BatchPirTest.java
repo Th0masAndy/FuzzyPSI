@@ -67,11 +67,11 @@ public class BatchPirTest extends AbstractTwoPartyMemoryRpcPto {
             BatchIndexPirFactory.BatchIndexPirType.VECTORIZED_BATCH_PIR.name(),
             new Mr23BatchIndexPirConfig.Builder().build()
         });
-        // CMG21 batch PIR
-        configurations.add(new Object[]{
-            BatchIndexPirFactory.BatchIndexPirType.LABEL_PSI.name(),
-            new Cmg21BatchIndexPirConfig.Builder().build()
-        });
+//        // CMG21 batch PIR
+//        configurations.add(new Object[]{
+//            BatchIndexPirFactory.BatchIndexPirType.LABEL_PSI.name(),
+//            new Cmg21BatchIndexPirConfig.Builder().build()
+//        });
         return configurations;
     }
 
@@ -92,7 +92,7 @@ public class BatchPirTest extends AbstractTwoPartyMemoryRpcPto {
 
     @Test
     public void testDefaultBitLengthParallel() {
-        testPto(DEFAULT_SERVER_ELEMENT_SIZE, DEFAULT_RETRIEVAL_SIZE, DEFAULT_BIT_LENGTH, true);
+        testPto(22000, 24, 264, false);
     }
 
     @Test

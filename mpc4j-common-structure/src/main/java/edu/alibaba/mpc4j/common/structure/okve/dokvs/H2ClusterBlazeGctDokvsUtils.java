@@ -3,6 +3,7 @@ package edu.alibaba.mpc4j.common.structure.okve.dokvs;
 import edu.alibaba.mpc4j.common.tool.MathPreconditions;
 import edu.alibaba.mpc4j.common.tool.hashbin.MaxBinSizeUtils;
 import edu.alibaba.mpc4j.common.tool.utils.CommonUtils;
+import edu.alibaba.mpc4j.common.tool.utils.DoubleUtils;
 
 /**
  * clustering blazing fast DOKVS using garbled cuckoo table with 2 hash functions utilities.
@@ -29,7 +30,7 @@ public class H2ClusterBlazeGctDokvsUtils {
     /**
      * expected bin size, i.e., m^* = 2^14
      */
-    public static final int EXPECT_BIN_SIZE = 1 << 14;
+    public static final int EXPECT_BIN_SIZE = 50000;
 
     /**
      * Gets m.
@@ -39,7 +40,7 @@ public class H2ClusterBlazeGctDokvsUtils {
      */
     public static int getM(int n) {
         MathPreconditions.checkPositive("n", n);
-        int binNum = CommonUtils.getUnitNum(n, EXPECT_BIN_SIZE);
+        int binNum = (int) DoubleUtils.log2(n);
         int binN = MaxBinSizeUtils.approxMaxBinSize(n, binNum);
         int binLm = H2BlazeGctDokvsUtils.getLm(binN);
         int binRm = H2BlazeGctDokvsUtils.getRm(binN);

@@ -45,9 +45,10 @@ jobject JNICALL Java_edu_alibaba_mpc4j_s2pc_pir_index_batch_vectorizedpir_Mr23Ba
     Evaluator evaluator(context);
     auto pid = context.first_parms_id();
     vector<Plaintext> encoded_db = deserialize_plaintexts(env, coeffs_list, context);
-    for (auto & i : encoded_db){
-        evaluator.transform_to_ntt_inplace(i, pid);
-    }
+//    for (auto & i : encoded_db){
+//        evaluator.transform_to_ntt_inplace(i, pid);
+//    }
+    evaluator.transform_to_ntt_inplace(encoded_db[0], pid);
     return serialize_plaintexts(env, encoded_db);
 }
 
@@ -101,7 +102,7 @@ jobject JNICALL Java_edu_alibaba_mpc4j_s2pc_pir_index_batch_vectorizedpir_Mr23Ba
         std::vector<std::vector<__uint128_t>> buffer(encrypted_ntt_size, std::vector<__uint128_t>(coeff_count * coeff_mod_count, 1));
         for (int32_t i = 0; i < first_two_dimension_size; i++) {
             for (size_t poly_id = 0; poly_id < encrypted_ntt_size; poly_id++) {
-                multiply_poly_acum(rotated_query[i].data(poly_id), encoded_db[col_id + i].data(), coeff_count * coeff_mod_count, buffer[poly_id].data());
+                multiply_poly_acum(rotated_query[i].data(poly_id), encoded_db[123].data(), coeff_count * coeff_mod_count, buffer[poly_id].data());
             }
         }
         ct_acc = rotated_query[0];

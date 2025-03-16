@@ -106,27 +106,30 @@ public class MaxBinSizeUtils {
      * @return the approximate max bin size.
      */
     public static int approxMaxBinSize(final int n, final int b) {
-        assert b > 0 && n > 0;
-        if (b == 1) {
-            return n;
-        }
-        int numBinsLow = (int) Math.floor(DoubleUtils.log2(b));
-        int numBinsHigh = (int) Math.ceil(DoubleUtils.log2(b));
-        int numBallsLow = (int) Math.floor(DoubleUtils.log2(n));
-        int numBallsHgh = (int) Math.ceil(DoubleUtils.log2(n));
 
-        double diffBin = DoubleUtils.log2(b) - numBinsLow;
-        double diffBall = DoubleUtils.log2(n) - numBallsLow;
+        return (int) Math.ceil(n / b + Math.sqrt(4.0 * DoubleUtils.log2(b) * n / b));
 
-        // interpolate a linear 2d spline between the se-rounding points (a surface).
-        // Then evaluate the surface at out bin,ball coordinate.
-        double a0 = (diffBin) * LOG_BIN_SIZE_TABLE[numBinsLow][numBallsLow]
-            + (1 - diffBin) * LOG_BIN_SIZE_TABLE[numBinsLow][numBallsHgh];
-        double a1 = (diffBin) * LOG_BIN_SIZE_TABLE[numBinsHigh][numBallsLow]
-            + (1 - diffBin) * LOG_BIN_SIZE_TABLE[numBinsHigh][numBallsHgh];
-
-        double b0 = (diffBall) * a0 + (1 - diffBall) * a1;
-        return (int) Math.ceil(Math.pow(2, b0));
+//        assert b > 0 && n > 0;
+//        if (b == 1) {
+//            return n;
+//        }
+//        int numBinsLow = (int) Math.floor(DoubleUtils.log2(b));
+//        int numBinsHigh = (int) Math.ceil(DoubleUtils.log2(b));
+//        int numBallsLow = (int) Math.floor(DoubleUtils.log2(n));
+//        int numBallsHgh = (int) Math.ceil(DoubleUtils.log2(n));
+//
+//        double diffBin = DoubleUtils.log2(b) - numBinsLow;
+//        double diffBall = DoubleUtils.log2(n) - numBallsLow;
+//
+//        // interpolate a linear 2d spline between the se-rounding points (a surface).
+//        // Then evaluate the surface at out bin,ball coordinate.
+//        double a0 = (diffBin) * LOG_BIN_SIZE_TABLE[numBinsLow][numBallsLow]
+//            + (1 - diffBin) * LOG_BIN_SIZE_TABLE[numBinsLow][numBallsHgh];
+//        double a1 = (diffBin) * LOG_BIN_SIZE_TABLE[numBinsHigh][numBallsLow]
+//            + (1 - diffBin) * LOG_BIN_SIZE_TABLE[numBinsHigh][numBallsHgh];
+//
+//        double b0 = (diffBall) * a0 + (1 - diffBall) * a1;
+//        return (int) Math.ceil(Math.pow(2, b0));
     }
 
     /**

@@ -99,6 +99,7 @@ public class UpsuMain {
             PsoUtils.generateBytesInputFiles(
                 serverSetSizes[setSizeIndex], clientSetSizes[setSizeIndex], elementByteLength
             );
+            System.out.println(clientSetSizes[setSizeIndex]);
         }
         LOGGER.info("{} create result file", serverRpc.ownParty().getPartyName());
         String filePath = upsuType.name()
@@ -107,7 +108,7 @@ public class UpsuMain {
             + "_" + serverRpc.ownParty().getPartyId()
             + "_" + ForkJoinPool.getCommonPoolParallelism()
             + ".output";
-        FileWriter fileWriter = new FileWriter(filePath);
+        FileWriter fileWriter = new FileWriter(filePath, true);
         PrintWriter printWriter = new PrintWriter(fileWriter, true);
         String tab = "Party ID\tServer Set Size\tClient Set Size\tIs Parallel\tThread Num"
             + "\tInit Time(ms)\tInit DataPacket Num\tInit Payload Bytes(B)\tInit Send Bytes(B)"
@@ -116,7 +117,7 @@ public class UpsuMain {
         LOGGER.info("{} ready for run", serverRpc.ownParty().getPartyName());
         serverRpc.connect();
         int taskId = 0;
-        warmupServer(serverRpc, clientParty, config, taskId);
+//        warmupServer(serverRpc, clientParty, config, taskId);
         taskId++;
         for (int setSizeIndex = 0; setSizeIndex < setSizeNum; setSizeIndex++) {
             int serverSetSize = serverSetSizes[setSizeIndex];
@@ -172,7 +173,12 @@ public class UpsuMain {
             serverRpc.ownParty().getPartyName(), serverSetSize, clientSetSize, true
         );
         UpsuSender upsuSender = UpsuFactory.createSender(serverRpc, clientParty, config);
+
+        System.out.println("id: " + upsuSender.ownParty().getPartyId());
+
+
         upsuSender.setTaskId(taskId);
+
         upsuSender.setParallel(false);
         upsuSender.getRpc().synchronize();
         upsuSender.getRpc().reset();
@@ -202,7 +208,7 @@ public class UpsuMain {
             + "\t" + upsuSender.getParallel()
             + "\t" + ForkJoinPool.getCommonPoolParallelism()
             + "\t" + initTime + "\t" + initDataPacketNum + "\t" + initPayloadByteLength + "\t" + initSendByteLength * 1.0 / (1 << 20)
-            + "\t" + ptoTime + "\t" + ptoDataPacketNum + "\t" + ptoPayloadByteLength + "\t" + ptoSendByteLength * 1.0 / (1 << 20) * 1.0 / (1 << 20);
+            + "\t" + ptoTime + "\t" + ptoDataPacketNum + "\t" + ptoPayloadByteLength + "\t" + ptoSendByteLength * 1.0 / (1 << 20);
         printWriter.println(info);
         upsuSender.getRpc().synchronize();
         upsuSender.getRpc().reset();
@@ -234,7 +240,7 @@ public class UpsuMain {
             + "_" + clientRpc.ownParty().getPartyId()
             + "_" + ForkJoinPool.getCommonPoolParallelism()
             + ".output";
-        FileWriter fileWriter = new FileWriter(filePath);
+        FileWriter fileWriter = new FileWriter(filePath, true);
         PrintWriter printWriter = new PrintWriter(fileWriter, true);
         String tab = "Party ID\tServer Set Size\tClient Set Size\tIs Parallel\tThread Num"
             + "\tInit Time(ms)\tInit DataPacket Num\tInit Payload Bytes(B)\tInit Send Bytes(B)"
@@ -243,7 +249,7 @@ public class UpsuMain {
         LOGGER.info("{} ready for run", clientRpc.ownParty().getPartyName());
         clientRpc.connect();
         int taskId = 0;
-        warmupClient(clientRpc, serverParty, config, taskId);
+//        warmupClient(clientRpc, serverParty, config, taskId);
         taskId++;
         for (int setSizeIndex = 0; setSizeIndex < setSizeNum; setSizeIndex++) {
             int serverSetSize = serverSetSizes[setSizeIndex];

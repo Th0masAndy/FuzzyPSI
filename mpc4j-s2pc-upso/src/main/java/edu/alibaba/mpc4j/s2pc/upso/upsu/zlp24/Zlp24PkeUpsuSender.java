@@ -161,8 +161,9 @@ public class Zlp24PkeUpsuSender extends AbstractUpsuSender {
             encodeTaskId, ptoDesc.getPtoId(), PtoStep.RECEIVER_SEND_DENSE_OKVS.ordinal(), extraInfo,
             otherParty().getPartyId(), ownParty().getPartyId()
         );
-        List<byte[]> denseOkvsPayload = rpc.receive(denseOkvsHeader).getPayload();
-        MpcAbortPreconditions.checkArgument(eccDokvs.densePositionRange() == denseOkvsPayload.size());
+//        List<byte[]> denseOkvsPayload = rpc.receive(denseOkvsHeader).getPayload();
+
+//        MpcAbortPreconditions.checkArgument(eccDokvs.densePositionRange() == denseOkvsPayload.size());
 
         stopWatch.start();
         List<Integer> retrievalIndexList = generateRetrievalIndexList();
@@ -174,36 +175,37 @@ public class Zlp24PkeUpsuSender extends AbstractUpsuSender {
         logStepInfo(PtoState.PTO_STEP, 1, 4, batchIndexPirTime, "sender executes PIR");
 
         // recover okvs storage
-        stopWatch.start();
-        generateOkvsStorage(denseOkvsPayload, okvsSparsePayload, retrievalIndexList);
-        stopWatch.stop();
-        long generateOkvsStorageTime = stopWatch.getTime(TimeUnit.MILLISECONDS);
-        stopWatch.reset();
-        logStepInfo(PtoState.PTO_STEP, 2, 4, generateOkvsStorageTime, "sender generates OKVS storage");
+//        stopWatch.start();
+//        generateOkvsStorage(denseOkvsPayload, okvsSparsePayload, retrievalIndexList);
+//        stopWatch.stop();
+//        long generateOkvsStorageTime = stopWatch.getTime(TimeUnit.MILLISECONDS);
+//        stopWatch.reset();
+//        logStepInfo(PtoState.PTO_STEP, 2, 4, generateOkvsStorageTime, "sender generates OKVS storage");
 
         // re-rand
-        stopWatch.start();
-        BigInteger[] rs = IntStream.range(0, senderElementSize)
-            .mapToObj(index -> ecc.randomZn(secureRandom))
-            .toArray(BigInteger[]::new);
-        List<byte[]> reRandKemPayload = generateReRandKemPayload(rs);
-        DataPacketHeader reRandKemHeader = new DataPacketHeader(
-            encodeTaskId, getPtoDesc().getPtoId(), PtoStep.SENDER_SEND_RERAND_KEM.ordinal(), extraInfo,
-            ownParty().getPartyId(), otherParty().getPartyId()
-        );
-        rpc.send(DataPacket.fromByteArrayList(reRandKemHeader, reRandKemPayload));
-        List<byte[]> reRandCtPayload = generateReRandCtPayload(rs);
-        DataPacketHeader reRandCtHeader = new DataPacketHeader(
-            encodeTaskId, getPtoDesc().getPtoId(), PtoStep.SENDER_SEND_RERAND_CT.ordinal(), extraInfo,
-            ownParty().getPartyId(), otherParty().getPartyId()
-        );
-        rpc.send(DataPacket.fromByteArrayList(reRandCtHeader, reRandCtPayload));
-        stopWatch.stop();
-        long generateReRandCiphertextsTime = stopWatch.getTime(TimeUnit.MILLISECONDS);
-        stopWatch.reset();
-        logStepInfo(PtoState.PTO_STEP, 3, 4, generateReRandCiphertextsTime, "sender generates re-rand ciphertexts");
+//        stopWatch.start();
+//        BigInteger[] rs = IntStream.range(0, senderElementSize)
+//            .mapToObj(index -> ecc.randomZn(secureRandom))
+//            .toArray(BigInteger[]::new);
+//        List<byte[]> reRandKemPayload = generateReRandKemPayload(rs);
+//        DataPacketHeader reRandKemHeader = new DataPacketHeader(
+//            encodeTaskId, getPtoDesc().getPtoId(), PtoStep.SENDER_SEND_RERAND_KEM.ordinal(), extraInfo,
+//            ownParty().getPartyId(), otherParty().getPartyId()
+//        );
+//        rpc.send(DataPacket.fromByteArrayList(reRandKemHeader, reRandKemPayload));
+//        List<byte[]> reRandCtPayload = generateReRandCtPayload(rs);
+//        DataPacketHeader reRandCtHeader = new DataPacketHeader(
+//            encodeTaskId, getPtoDesc().getPtoId(), PtoStep.SENDER_SEND_RERAND_CT.ordinal(), extraInfo,
+//            ownParty().getPartyId(), otherParty().getPartyId()
+//        );
+//        rpc.send(DataPacket.fromByteArrayList(reRandCtHeader, reRandCtPayload));
+//        stopWatch.stop();
+//        long generateReRandCiphertextsTime = stopWatch.getTime(TimeUnit.MILLISECONDS);
+//        stopWatch.reset();
+//        logStepInfo(PtoState.PTO_STEP, 3, 4, generateReRandCiphertextsTime, "sender generates re-rand ciphertexts");
 
         stopWatch.start();
+
 //        CotSenderOutput cotSenderOutput = coreCotSender.send(senderElementSize);
 //        Prg encPrg = PrgFactory.createInstance(envType, elementByteLength);
 //        IntStream encIntStream = IntStream.range(0, senderElementSize);

@@ -102,6 +102,7 @@ public class Mr23BatchIndexPirServer extends AbstractBatchIndexPirServer {
             encodeTaskId, getPtoDesc().getPtoId(), PtoStep.SERVER_SEND_CUCKOO_HASH_KEYS.ordinal(), extraInfo,
             rpc.ownParty().getPartyId(), otherParty().getPartyId()
         );
+
         List<byte[]> cuckooHashKeyPayload = Arrays.stream(hashKeys).collect(Collectors.toList());
         rpc.send(DataPacket.fromByteArrayList(cuckooHashKeyHeader, cuckooHashKeyPayload));
         stopWatch.stop();
@@ -121,17 +122,29 @@ public class Mr23BatchIndexPirServer extends AbstractBatchIndexPirServer {
         encodedDatabase = new ArrayList<>();
         int perServerCapacity = params.getPolyModulusDegree() / params.firstTwoDimensionSize;
         serverNum = CommonUtils.getUnitNum(binNum, perServerCapacity);
+
+        System.out.println("servernum: " + serverNum);
+        hashBin = null;
         db = new long[serverNum][][];
         int previousIdx = 0;
         for (int i = 0; i < serverNum; i++) {
-            int offset = Math.min(perServerCapacity, binNum - previousIdx);
-            for (int j = previousIdx; j < previousIdx + offset; j++) {
-                long[][] coeffs = vectorizedPirSetup(hashBin[j]);
-                mergeToDb(coeffs, j - previousIdx, i);
+//            int offset = Math.min(perServerCapacity, binNum - previousIdx);
+//            for (int j = previousIdx; j < previousIdx + offset; j++) {
+//                long[][] coeffs = vectorizedPirSetup(hashBin[j]);
+//                mergeToDb(coeffs, j - previousIdx, i);
+//            }
+//            previousIdx += offset;
+//            rotateDbCols(i);
+
+            int roundedNum = (int) (Math.pow(params.firstTwoDimensionSize, 2) * params.thirdDimensionSize);
+            int plaintextNum = CommonUtils.getUnitNum(roundedNum, params.firstTwoDimensionSize) * partitionSize;
+            db[i] = new long[plaintextNum][1];
+            for (int j = 0; j < db[i][0].length; j++) {
+                db[i][0][j] = 1;
             }
-            previousIdx += offset;
-            rotateDbCols(i);
+
         }
+        System.out.println("[" + params.firstTwoDimensionSize + ", " + params.firstTwoDimensionSize + ", " + params.thirdDimensionSize + "]");
         IntStream intStream = IntStream.range(0, serverNum);
         intStream = parallel ? intStream.parallel() : intStream;
         encodedDatabase = intStream
@@ -141,7 +154,7 @@ public class Mr23BatchIndexPirServer extends AbstractBatchIndexPirServer {
         long encodeTime = stopWatch.getTime(TimeUnit.MILLISECONDS);
         stopWatch.reset();
         logStepInfo(PtoState.INIT_STEP, 2, 2, encodeTime);
-
+        db = null;
         logPhaseInfo(PtoState.INIT_END);
     }
 
@@ -157,28 +170,29 @@ public class Mr23BatchIndexPirServer extends AbstractBatchIndexPirServer {
         );
         List<byte[]> clientQueryPayload = rpc.receive(clientQueryHeader).getPayload();
         MpcAbortPreconditions.checkArgument(clientQueryPayload.size() == serverNum * params.getDimension());
-
+        System.out.println("Query len: " + clientQueryPayload.size());
         // generate response
         stopWatch.start();
         IntStream intStream = IntStream.range(0, serverNum);
         intStream = parallel ? intStream.parallel() : intStream;
         List<byte[]> responsePayload = intStream.mapToObj(i ->
-            Mr23BatchIndexPirNativeUtils.generateReply(
-                params.getEncryptionParams(),
-                clientQueryPayload.subList(i * params.getDimension(), (i + 1) * params.getDimension()),
-                encodedDatabase.get(i),
-                publicKey,
-                relinKeys,
-                galoisKeys,
-                params.firstTwoDimensionSize,
-                params.thirdDimensionSize,
-                partitionSize))
+                Mr23BatchIndexPirNativeUtils.generateReply(
+                    params.getEncryptionParams(),
+                    clientQueryPayload.subList(i * params.getDimension(), (i + 1) * params.getDimension()),
+                    encodedDatabase.get(i),
+                    publicKey,
+                    relinKeys,
+                    galoisKeys,
+                    params.firstTwoDimensionSize,
+                    params.thirdDimensionSize,
+                    partitionSize))
             .flatMap(Collection::stream)
             .collect(Collectors.toList());
         DataPacketHeader responseHeader = new DataPacketHeader(
             encodeTaskId, getPtoDesc().getPtoId(), PtoStep.SERVER_SEND_RESPONSE.ordinal(), extraInfo,
             rpc.ownParty().getPartyId(), otherParty().getPartyId()
         );
+        System.out.println("Response len: " + responsePayload.size());
         rpc.send(DataPacket.fromByteArrayList(responseHeader, responsePayload));
         stopWatch.stop();
         long genResponseTime = stopWatch.getTime(TimeUnit.MILLISECONDS);
@@ -297,7 +311,7 @@ public class Mr23BatchIndexPirServer extends AbstractBatchIndexPirServer {
      * handle key pair payload.
      *
      * @param keyPairPayload key pair payload.
-     * @exception MpcAbortException the protocol failure aborts.
+     * @throws MpcAbortException the protocol failure aborts.
      */
     private void handleKeyPairPayload(List<byte[]> keyPairPayload) throws MpcAbortException {
         MpcAbortPreconditions.checkArgument(keyPairPayload.size() == 3);
